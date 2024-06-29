@@ -1,6 +1,6 @@
 import {Manifest} from "deno-slack-sdk/mod.ts";
 import {BookTripFunction} from "./functions/book_trip.ts";
-import TripsDatastore from "./datastores/trips.ts";
+import TripsDatastore, {TripTimingCustomType} from "./datastores/trips.ts";
 
 /**
  * The app manifest contains the app's configuration. This
@@ -13,6 +13,7 @@ export default Manifest({
     icon: "assets/app-icon.png",
     functions: [BookTripFunction],
     datastores: [TripsDatastore],
+    types: [TripTimingCustomType],
     workflows: [],
     outgoingDomains: [],
     botScopes: [

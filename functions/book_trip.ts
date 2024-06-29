@@ -1,8 +1,8 @@
 import {DefineFunction, Schema, SlackFunction} from "deno-slack-sdk/mod.ts";
 import {SlackAPIClient} from "deno-slack-api/types.ts";
-import TripsDatastore from "../datastores/trips.ts";
-import {DailyTrips, PlanetTrips, TripTiming} from "../types/trips.ts";
+import {DailyTrips, isValidPlanet, Planet, TripTiming,} from "../types/trips.ts";
 import {getDateString, todayHHmmToTimestamp} from "../utils.ts";
+import {getTrips, storeTrips} from "../datastores/trips.ts";
 
 export const BookTripFunction = DefineFunction({
     callback_id: "book_trip_function",
@@ -54,6 +54,9 @@ export default SlackFunction(BookTripFunction, async ({ inputs, client }) => {
         if (takeoffAt <= landingAt) {
             throw new Error("takeoff time should be greater than landing time");
         }
+        if (!isValidPlanet(planet)) {
+            throw new Error(`planet (${planet}) not supported`);
+        }
         await processBooking(client, planet, landingAt, takeoffAt);
         return {
             outputs: inputs,
@@ -96,92 +99,51 @@ function getAvailableSlot(
     );
 }
 
-async function getTrips(
-    client: SlackAPIClient,
+function newDailyTrips<P extends Planet>(
     on: string,
-    planet: string,
-): Promise<DailyTrips> {
-    const response = await client.apps.datastore.get<
-        typeof TripsDatastore.definition
-    >({
-        datastore: TripsDatastore.name,
-        id: on,
-    });
-    if (!response.ok) {
-        throw new Error(
-            `Error fetching trips. Contact the app maintainers with the following information - (Error detail: ${response.error})`,
-        );
-    }
-    if (response.item.on) {
-        return response.item as DailyTrips;
-    }
-    return newDailyTrips(on, planet);
-}
-
-function newDailyTrips(on: string, planet: string): DailyTrips {
+    planet: P,
+    trips?: DailyTrips | undefined,
+): DailyTrips { //TODO: use DailyTripsFor<P>
     return {
         on,
-        planets: [
-            {
-                planet,
-                booked_trips: [],
-            },
-        ],
+        [planet]: [],
+        ...trips,
     };
 }
 
-async function processBooking(
+async function processBooking<P extends Planet>(
     client: SlackAPIClient,
-    planet: string,
+    planet: P,
     landingAt: number,
     takeoffAt: number,
 ) {
     const today = getDateString();
-    const trips = await getTrips(client, today, planet);
-    const planetIndex = getPlanetIndex(trips, planet);
-    const bookedTrips = trips.planets[planetIndex].booked_trips;
+    let trips: DailyTrips | undefined = await getTrips(
+        client,
+        today,
+    );
+    trips = newDailyTrips(today, planet, trips);
+    const bookedTrips = trips[planet] as TripTiming[]; //TODO: avoid as
     const slot = getAvailableSlot(bookedTrips, landingAt, takeoffAt);
-    recordTrip(trips, planetIndex, slot, landingAt, takeoffAt);
+    recordTrip(trips, planet, slot, landingAt, takeoffAt);
     await storeTrips(client, trips);
-}
-
-async function storeTrips(
-    client: SlackAPIClient,
-    trips: DailyTrips,
-) {
-    const response = await client.apps.datastore.put({
-        datastore: TripsDatastore.name,
-        item: trips,
-    });
-    if (!response.ok) {
-        throw new Error(
-            `Error storing trips. Contact the app maintainers with the following information - (Error detail: ${response.error})`,
-        );
-    }
-    return trips;
 }
 
 function recordTrip(
     trips: DailyTrips,
-    planetIndex: number,
+    planet: Planet,
     slot: number,
     landingAt: number,
     takeoffAt: number,
 ) {
-    const planetTrips = trips.planets[planetIndex].booked_trips;
+    const planetTrips = trips[planet] as TripTiming[]; //TODO: avoid as
     const newTrip: TripTiming = {
         landing_at: landingAt,
         takeoff_at: takeoffAt,
     };
-    trips.planets[planetIndex].booked_trips = [
+    trips[planet] = [
         ...planetTrips.slice(0, slot),
         newTrip,
         ...planetTrips.slice(slot),
     ];
-}
-
-function getPlanetIndex(trips: DailyTrips, planet: string): number {
-    return trips.planets.findIndex((planetTrips: PlanetTrips) => {
-        return planetTrips.planet === planet;
-    });
 }
