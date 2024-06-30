@@ -3,6 +3,7 @@ import {SlackAPIClient} from "deno-slack-api/types.ts";
 import {DailyTrips, isValidPlanet, Planet, TripTiming,} from "../types/trips.ts";
 import {getDateString, todayHHmmToTimestamp} from "../utils.ts";
 import {getTrips, storeTrips} from "../datastores/trips.ts";
+import {withHandledError} from "./error_handler.ts";
 
 export const BookTripFunction = DefineFunction({
     callback_id: "book_trip_function",
@@ -63,18 +64,6 @@ export default SlackFunction(BookTripFunction, async ({ inputs, client }) => {
         };
     });
 });
-
-async function withHandledError<F extends (...args: any) => Promise<any>>(
-    execute: F,
-): Promise<ReturnType<F> | { error: string }> {
-    try {
-        return await execute();
-    } catch (err) {
-        return {
-            error: err.toString(),
-        };
-    }
-}
 
 function getAvailableSlot(
     bookedTrips: TripTiming[],

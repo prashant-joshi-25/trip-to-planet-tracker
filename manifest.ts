@@ -1,6 +1,8 @@
 import {Manifest} from "deno-slack-sdk/mod.ts";
 import {BookTripFunction} from "./functions/book_trip.ts";
+import {GenerateGanttChartFunction} from "./functions/generate_gantt_chart.ts";
 import TripsDatastore, {TripTimingCustomType} from "./datastores/trips.ts";
+import {CHART_API_DOMAIN} from "./constants/chart.ts";
 
 /**
  * The app manifest contains the app's configuration. This
@@ -11,11 +13,13 @@ export default Manifest({
     name: "Trip to Planet Tracker",
     description: "Track booking of trips and planet availability",
     icon: "assets/app-icon.png",
-    functions: [BookTripFunction],
+    functions: [BookTripFunction, GenerateGanttChartFunction],
     datastores: [TripsDatastore],
     types: [TripTimingCustomType],
     workflows: [],
-    outgoingDomains: [],
+    outgoingDomains: [
+        CHART_API_DOMAIN,
+    ],
     botScopes: [
         "commands",
         "chat:write",
