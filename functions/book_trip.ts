@@ -82,7 +82,10 @@ function getAvailableSlot(
         ) {
             return slot;
         }
-        slotStartTime = bookedTrips[slot].landing_at;
+        slotStartTime = bookedTrips[slot].takeoff_at;
+    }
+    if (landingAt >= slotStartTime) {
+        return bookedTrips.length;
     }
     throw new Error(
         "slot not available, please change timings or check for other planets",
