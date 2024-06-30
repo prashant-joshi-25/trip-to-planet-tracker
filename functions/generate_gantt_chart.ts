@@ -39,17 +39,17 @@ export default SlackFunction(
     },
 );
 
-function prepareDatasets(trips: DailyTrips): Datasets<Date> {
-    const datasets: Datasets<Date> = [];
+function prepareDatasets(trips: DailyTrips): Datasets {
+    const datasets: Datasets = [];
     const maxTripsCount = getMaxTripsCount(trips);
-    PLANETS.forEach((planet, j) => {
+    PLANETS.forEach((planet) => {
         for (let i = 0; i < maxTripsCount; i++) {
-            const trip = trips[planet]?.[j];
-            let dataValue: DataValue<Date> = [];
+            const trip = trips[planet]?.[i];
+            let dataValue: DataValue = [];
             if (trip) {
                 dataValue = [
-                    new Date(trip.landing_at),
-                    new Date(trip.takeoff_at),
+                    trip.landing_at,
+                    trip.takeoff_at,
                 ];
             }
             if (!datasets[i]) {
@@ -74,7 +74,7 @@ function getMaxTripsCount(trips: DailyTrips): number {
     }, 0);
 }
 
-async function generateTripsGanttChartUrl(
+export async function generateTripsGanttChartUrl(
     client: SlackAPIClient,
     landingTime?: number,
     takeoffTime?: number,
@@ -105,26 +105,26 @@ function ganttChartConfigOptions(
     trips: DailyTrips,
     landingTime: number | undefined,
     takeoffTime: number | undefined,
-): ChartConfigOptions<Date> {
+): ChartConfigOptions {
     const labels = LABELS;
     const datasets = prepareDatasets(trips);
-    const axisStartTime = new Date(trips.on);
-    axisStartTime.setHours(TIME_AXIS_START_HOUR);
-    const axisEndTime = new Date(trips.on);
-    axisEndTime.setHours(TIME_AXIS_END_HOUR);
-    const annotationsOptions: AnnotationLinesOption<Date> = {
+    const axisStartDate = new Date(trips.on);
+    axisStartDate.setHours(TIME_AXIS_START_HOUR);
+    const axisEndDate = new Date(trips.on);
+    axisEndDate.setHours(TIME_AXIS_END_HOUR);
+    const annotationsOptions: AnnotationLinesOption = {
         start: {
-            value: new Date(),
+            value: new Date().getTime(),
             color: "green",
         },
     };
     if (landingTime) {
-        annotationsOptions.start.value = new Date(landingTime);
+        annotationsOptions.start.value = landingTime;
         annotationsOptions.start.label = "Landing Time";
     }
     if (takeoffTime) {
         annotationsOptions.end = {
-            value: new Date(takeoffTime),
+            value: takeoffTime,
             label: "Takeoff Time",
             color: "red",
         };
@@ -133,8 +133,8 @@ function ganttChartConfigOptions(
         labels,
         datasets,
         timeAxisOptions: {
-            start: axisStartTime,
-            end: axisEndTime,
+            start: axisStartDate.getTime(),
+            end: axisEndDate.getTime(),
         },
         annotationsOptions,
     };
