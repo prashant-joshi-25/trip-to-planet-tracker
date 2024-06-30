@@ -36,40 +36,43 @@ const ganttChartConfig = <T>(
         }));
     }
     return {
-        type: "horizontalBar",
-        data: {
-            labels,
-            datasets,
-        },
-        options: {
-            legend: {
-                display: false,
+        chart: {
+            type: "horizontalBar",
+            data: {
+                labels,
+                datasets,
             },
-            annotation: {
-                annotations,
-            },
-            scales: {
-                xAxes: [{
-                    position: "top",
-                    type: "time",
-                    time: {
-                        unit: "hour",
-                        displayFormats: {
-                            hour: "HH:mm",
+            options: {
+                legend: {
+                    display: false,
+                },
+                annotation: {
+                    annotations,
+                },
+                scales: {
+                    xAxes: [{
+                        position: "top",
+                        type: "time",
+                        time: {
+                            unit: "hour",
+                            displayFormats: {
+                                hour: "HH:mm",
+                            },
                         },
-                    },
-                    ticks: {
-                        min: timeAxisOptions.start,
-                        max: timeAxisOptions.end,
-                    },
-                }],
-                yAxes: [
-                    {
-                        "stacked": true,
-                    },
-                ],
+                        ticks: {
+                            min: timeAxisOptions.start,
+                            max: timeAxisOptions.end,
+                        },
+                    }],
+                    yAxes: [
+                        {
+                            "stacked": true,
+                        },
+                    ],
+                },
             },
         },
+        backgroundColor: "#fff",
     };
 };
 
@@ -77,15 +80,12 @@ export async function createGanttChart<T>(
     options: ChartConfigOptions<T>,
 ): Promise<string> {
     const chartConfig = ganttChartConfig(options);
-    const requestBody = {
-        chart: chartConfig,
-    };
     const request: Request = new Request(CHART_CREATE_URL, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify(chartConfig),
     });
     const response = await fetch(request);
     if (response.status !== 200) {
