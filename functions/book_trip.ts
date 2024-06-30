@@ -1,9 +1,10 @@
 import {DefineFunction, Schema, SlackFunction} from "deno-slack-sdk/mod.ts";
 import {SlackAPIClient} from "deno-slack-api/types.ts";
-import {DailyTrips, isValidPlanet, Planet, TripTiming,} from "../types/trips.ts";
+import {DailyTrips, Planet, TripTiming,} from "../types/trips.ts";
 import {getDateString, todayHHmmToTimestamp} from "../utils.ts";
 import {getTrips, storeTrips} from "../datastores/trips.ts";
 import {withHandledError} from "./error_handler.ts";
+import {isValidPlanet} from "../types/utils.ts";
 
 export const BookTripFunction = DefineFunction({
     callback_id: "book_trip_function",

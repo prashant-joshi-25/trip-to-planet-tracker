@@ -1,5 +1,3 @@
-import {PLANETS} from "../constants/chart.ts";
-
 export interface TripTiming {
     landing_at: number;
     takeoff_at: number;
@@ -18,10 +16,6 @@ export enum Planet {
 export interface DailyTrips extends Partial<Record<Planet, TripTiming[]>> {
     on: string;
     chart_url?: string;
-}
-
-export function isValidPlanet(planet: string): planet is Planet {
-    return PLANETS.includes(planet as Planet);
 }
 
 export type DailyTripsFor<P extends string & Planet> =
