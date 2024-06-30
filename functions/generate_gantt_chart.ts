@@ -109,9 +109,9 @@ function ganttChartConfigOptions(
     const labels = LABELS;
     const datasets = prepareDatasets(trips);
     const axisStartDate = new Date(trips.on);
-    axisStartDate.setHours(TIME_AXIS_START_HOUR);
+    axisStartDate.setUTCHours(TIME_AXIS_START_HOUR);
     const axisEndDate = new Date(trips.on);
-    axisEndDate.setHours(TIME_AXIS_END_HOUR);
+    axisEndDate.setUTCHours(TIME_AXIS_END_HOUR);
     const annotationsOptions: AnnotationLinesOption = {
         start: {
             value: new Date().getTime(),

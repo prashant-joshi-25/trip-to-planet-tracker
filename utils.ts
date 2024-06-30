@@ -11,7 +11,7 @@ export function todayHHmmToTimestamp(timeInHHmm: string): number {
     const minNum = Number(timeParts[1]);
     if (hoursNum >= 0 && hoursNum < 24 && minNum >= 0 && minNum < 60) {
         const today = new Date();
-        today.setHours(hoursNum, minNum, 0, 0);
+        today.setUTCHours(hoursNum, minNum, 0, 0);
         return today.getTime();
     }
     throw new Error("invalid hours/minutes");
