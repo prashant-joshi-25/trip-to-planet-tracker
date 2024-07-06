@@ -127,14 +127,17 @@ function ganttChartConfigOptions(
     const axisEndDate = new Date(trips.on);
     axisEndDate.setUTCHours(TIME_AXIS_END_HOUR);
     const annotationsOptions: AnnotationLinesOption = {
-        start: {
-            value: new Date().getTime(), //TODO: use current time in IST
-            color: "green",
-        },
+        // start: {
+        //     value: new Date().setUTCHours(8, 0, 0, 0), //TODO: use current time in IST
+        //     color: "green",
+        // },
     };
     if (landingTime) {
-        annotationsOptions.start.value = landingTime;
-        annotationsOptions.start.label = "Landing Time";
+        annotationsOptions.start = {
+            value: landingTime,
+            label: "Landing Time",
+            color: "green",
+        };
     }
     if (takeoffTime) {
         annotationsOptions.end = {

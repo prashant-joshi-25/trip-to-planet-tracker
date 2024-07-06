@@ -14,7 +14,7 @@ export interface AnnotationLineOption<Value> {
 }
 
 export type AnnotationLinesOption<Value = Timestamp> = {
-    start: AnnotationLineOption<Value>;
+    start?: AnnotationLineOption<Value>;
     end?: AnnotationLineOption<Value>;
 };
 

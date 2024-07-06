@@ -25,10 +25,13 @@ const ganttChartConfig = <T>(
         timeAxisOptions,
     }: ChartConfigOptions<T>,
 ) => {
-    const annotations = [annotationLine({
-        ...annotationsOptions.start,
-        position: "top",
-    })];
+    const annotations = [];
+    if (annotationsOptions.start) {
+        annotations.push(annotationLine({
+            ...annotationsOptions.start,
+            position: "top",
+        }));
+    }
     if (annotationsOptions.end) {
         annotations.push(annotationLine({
             ...annotationsOptions.end,
