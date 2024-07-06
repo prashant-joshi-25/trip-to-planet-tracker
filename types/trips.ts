@@ -4,21 +4,18 @@ export interface TripTiming {
 }
 
 export enum Planet {
-    JUPITER = "JUPITER :jupiter:",
-    SATURN = "SATURN :ringed_planet:",
-    NEPTUNE = "NEPTUNE :neptune:",
-    MARS = "MARS :mars:",
-    URANUS = "URANUS :uranus:",
-    VENUS = "VENUS :venus:",
-    MERCURY = "MERCURY :mercury:",
+    JUPITER = "Jupiter",
+    SATURN = "Saturn",
+    NEPTUNE = "Neptune",
+    MARS = "Mars",
+    URANUS = "Uranus",
+    VENUS = "Venus",
+    MERCURY = "Mercury",
 }
 
 export interface DailyTrips extends Partial<Record<Planet, TripTiming[]>> {
     on: string;
-}
-
-export function isValidPlanet(planet: string): planet is Planet {
-    return Object.values(Planet).includes(planet as Planet);
+    chart_url?: string;
 }
 
 export type DailyTripsFor<P extends string & Planet> =

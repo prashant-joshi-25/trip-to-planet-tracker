@@ -1,8 +1,10 @@
 import {DefineFunction, Schema, SlackFunction} from "deno-slack-sdk/mod.ts";
 import {SlackAPIClient} from "deno-slack-api/types.ts";
-import {DailyTrips, isValidPlanet, Planet, TripTiming,} from "../types/trips.ts";
+import {DailyTrips, Planet, TripTiming} from "../types/trips.ts";
 import {getDateString, todayHHmmToTimestamp} from "../utils.ts";
 import {getTrips, storeTrips} from "../datastores/trips.ts";
+import {withHandledError} from "./error_handler.ts";
+import {isValidPlanet} from "../types/utils.ts";
 
 export const BookTripFunction = DefineFunction({
     callback_id: "book_trip_function",
@@ -14,10 +16,10 @@ export const BookTripFunction = DefineFunction({
                 type: Schema.types.string,
             },
             landing_time: {
-                type: Schema.types.string, //TODO: use timepicker
+                type: Schema.types.string,
             },
             takeoff_time: {
-                type: Schema.types.string, //TODO: use timepicker
+                type: Schema.types.string,
             },
         },
         required: [
@@ -49,31 +51,30 @@ export const BookTripFunction = DefineFunction({
 export default SlackFunction(BookTripFunction, async ({ inputs, client }) => {
     return await withHandledError(async () => {
         const { planet, landing_time, takeoff_time } = inputs;
-        const landingAt = todayHHmmToTimestamp(landing_time);
-        const takeoffAt = todayHHmmToTimestamp(takeoff_time);
-        if (takeoffAt <= landingAt) {
-            throw new Error("takeoff time should be greater than landing time");
-        }
-        if (!isValidPlanet(planet)) {
-            throw new Error(`planet (${planet}) not supported`);
-        }
-        await processBooking(client, planet, landingAt, takeoffAt);
+        await bookTrip(client, planet, landing_time, takeoff_time);
         return {
             outputs: inputs,
         };
     });
 });
 
-async function withHandledError<F extends (...args: any) => Promise<any>>(
-    execute: F,
-): Promise<ReturnType<F> | { error: string }> {
-    try {
-        return await execute();
-    } catch (err) {
-        return {
-            error: err.toString(),
-        };
+export async function bookTrip(
+    client: SlackAPIClient,
+    planet: string,
+    landingTime: string,
+    takeoffTime: string,
+) {
+    console.log("Booking trip...", planet, landingTime, takeoffTime);
+    const landingAt = todayHHmmToTimestamp(landingTime);
+    const takeoffAt = todayHHmmToTimestamp(takeoffTime);
+    if (takeoffAt <= landingAt) {
+        throw new Error("takeoff time should be greater than landing time");
     }
+    if (!isValidPlanet(planet)) {
+        throw new Error(`planet (${planet}) not supported`);
+    }
+    await processBooking(client, planet, landingAt, takeoffAt);
+    console.log("Trip booked successfully");
 }
 
 function getAvailableSlot(
@@ -92,7 +93,10 @@ function getAvailableSlot(
         ) {
             return slot;
         }
-        slotStartTime = bookedTrips[slot].landing_at;
+        slotStartTime = bookedTrips[slot].takeoff_at;
+    }
+    if (landingAt >= slotStartTime) {
+        return bookedTrips.length;
     }
     throw new Error(
         "slot not available, please change timings or check for other planets",
