@@ -1,6 +1,6 @@
 # <img src="./assets/app-icon.png" width=40 height=40> Trip to Planet Tracker
 
-This Slack app lets user book a trip to planet considering the availability of the planet for given timings.
+This Slack app allows users to book a trip to a planet based on the planet's availability during the selected time frame.
 
 https://github.com/prashant-joshi-25/trip-to-planet-tracker/assets/132480019/079213a4-a83c-4467-bbce-9afab4bb712c
 
