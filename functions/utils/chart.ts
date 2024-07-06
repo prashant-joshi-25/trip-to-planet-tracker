@@ -56,7 +56,7 @@ const ganttChartConfig = <T>(
                         time: {
                             unit: "hour",
                             displayFormats: {
-                                hour: "HH:mm",
+                                hour: "HH:mm a",
                             },
                         },
                         ticks: {
