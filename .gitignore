@@ -5,3 +5,4 @@ package
 .idea
 .vscode
 .devcontainer
+.env
