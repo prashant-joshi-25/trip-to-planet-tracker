@@ -223,6 +223,7 @@ const modalView = (chartUrl: string) => {
                 accessory: {
                     type: "timepicker",
                     action_id: "landing_time_picker",
+                    initial_time: "08:00",
                     placeholder: {
                         type: "plain_text",
                         text: "Select a time",
@@ -239,6 +240,7 @@ const modalView = (chartUrl: string) => {
                 accessory: {
                     type: "timepicker",
                     action_id: "takeoff_time_picker",
+                    initial_time: "08:30",
                     placeholder: {
                         type: "plain_text",
                         text: "Select a time",
