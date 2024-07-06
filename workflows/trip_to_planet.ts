@@ -13,14 +13,14 @@ export const TripToPlanetWorkflow = DefineWorkflow({
             user: {
                 type: Schema.slack.types.user_id,
             },
-            channel: {
-                type: Schema.slack.types.channel_id,
-            },
+            // channel: {
+            //     type: Schema.slack.types.channel_id,
+            // },
         },
         required: [
             "interactivity",
             "user",
-            "channel",
+            // "channel",
         ],
     },
 });
@@ -29,6 +29,7 @@ const bookingTripModal = TripToPlanetWorkflow.addStep(
     BookingModalFunction,
     {
         interactivity: TripToPlanetWorkflow.inputs.interactivity,
+        user: TripToPlanetWorkflow.inputs.user,
     },
 );
 
@@ -58,11 +59,11 @@ const bookingTripModal = TripToPlanetWorkflow.addStep(
 //     },
 // );
 //
-TripToPlanetWorkflow.addStep(
-    Schema.slack.functions.SendMessage,
-    {
-        channel_id: TripToPlanetWorkflow.inputs.channel,
-        message:
-            `${TripToPlanetWorkflow.inputs.user} will be on ${bookingTripModal.outputs.planet} from **${bookingTripModal.outputs.landing_time}** to **${bookingTripModal.outputs.takeoff_time}**`,
-    },
-);
+// TripToPlanetWorkflow.addStep(
+//     Schema.slack.functions.SendMessage,
+//     {
+//         channel_id: TripToPlanetWorkflow.inputs.channel,
+//         message:
+//             `${TripToPlanetWorkflow.inputs.user} will be on ${bookingTripModal.outputs.planet} from **${bookingTripModal.outputs.landing_time}** to **${bookingTripModal.outputs.takeoff_time}**`,
+//     },
+// );

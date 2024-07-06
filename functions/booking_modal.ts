@@ -2,6 +2,8 @@ import {DefineFunction, Schema, SlackFunction} from "deno-slack-sdk/mod.ts";
 import {generateTripsGanttChartUrl} from "./generate_gantt_chart.ts";
 import {Planet} from "../types/trips.ts";
 import {bookTrip} from "./book_trip.ts";
+import {SlackAPIClient} from "deno-slack-api/types.ts";
+import {PLANET_LABELS} from "../constants/planet.ts";
 
 export const BookingModalFunction = DefineFunction({
     callback_id: "booking_modal_function",
@@ -12,12 +14,16 @@ export const BookingModalFunction = DefineFunction({
             interactivity: {
                 type: Schema.slack.types.interactivity,
             },
+            user: {
+                type: Schema.slack.types.user_id,
+            },
             // chart_url: {
             //     type: Schema.types.string,
             // },
         },
         required: [
             // "chart_url",
+            "user",
             "interactivity",
         ],
     },
@@ -35,12 +41,16 @@ export const BookingModalFunction = DefineFunction({
             takeoff_time: {
                 type: Schema.types.string,
             },
+            user: {
+                type: Schema.slack.types.user_id,
+            },
         },
         required: [
             // "chart_url",
             "planet",
             "landing_time",
             "takeoff_time",
+            "user",
         ],
     },
 });
@@ -56,7 +66,7 @@ export default SlackFunction(
         });
         if (response.error) {
             const error =
-                `Failed to open a modal in the demo workflow. Contact the app maintainers with the following information - (error: ${response.error})`;
+                `Failed to open booking modal. Contact the app maintainers with the following information - (error: ${response.error})`;
             return { error };
         }
         console.log("Continuing interaction...");
@@ -66,21 +76,29 @@ export default SlackFunction(
     },
 ).addViewSubmissionHandler(
     "booking_modal_function",
-    async ({ view, client }) => {
+    async ({ inputs, view, client, env }) => {
         console.log("Booking modal was submitted", view.state.values);
         const {
             planet_select_section,
             landing_time_section,
             takeoff_time_section,
         } = view.state.values; //TODO: use proper types
-        const planet =
-            planet_select_section.planet_select_action.selected_option.value;
+        const planet = planet_select_section.planet_select_action
+            .selected_option.value as Planet;
         const landingTime =
             landing_time_section.landing_time_picker.selected_time;
         const takeoffTime =
             takeoff_time_section.takeoff_time_picker.selected_time;
         await bookTrip(client, planet, landingTime, takeoffTime);
         //TODO: show errors
+        await sendBookingMessage(
+            client,
+            inputs.user,
+            env.CHANNEL_ID,
+            PLANET_LABELS[planet],
+            landingTime,
+            takeoffTime,
+        );
         console.log("Closing booking modal...");
         return {
             response_action: "clear",
@@ -230,3 +248,32 @@ const modalView = (chartUrl: string) => {
         ],
     };
 };
+
+async function sendBookingMessage(
+    client: SlackAPIClient,
+    user: string,
+    channel: string,
+    planetLabel: typeof PLANET_LABELS[keyof typeof PLANET_LABELS],
+    landingTime: string,
+    takeoffTime: string,
+) {
+    console.log(
+        "sending booking message...",
+        user,
+        channel,
+        planetLabel,
+        landingTime,
+        takeoffTime,
+    );
+    const response = await client.chat.postMessage({
+        channel,
+        text:
+            `<@${user}> will be on *${planetLabel}* from *${landingTime}* to *${takeoffTime}*.`,
+    });
+    if (!response.ok) {
+        console.log(`Failed to send booking message: ${response.error}`);
+    } else {
+        console.log("Booking message sent", response);
+    }
+    return response.ts;
+}

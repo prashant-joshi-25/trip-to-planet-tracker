@@ -2,7 +2,7 @@ import {Trigger} from "deno-slack-api/types.ts";
 import {TripToPlanetWorkflow} from "../workflows/trip_to_planet.ts";
 import {TriggerContextData, TriggerTypes} from "deno-slack-api/mod.ts";
 
-import "std/dotenv/load.ts";
+// import "std/dotenv/load.ts";
 
 const bookTripTrigger: Trigger<typeof TripToPlanetWorkflow.definition> = {
     type: TriggerTypes.Shortcut,
@@ -10,7 +10,7 @@ const bookTripTrigger: Trigger<typeof TripToPlanetWorkflow.definition> = {
     name: "Trip to Planet",
     description:
         "lets user book a trip to planet considering the availability of the planet for given timings.",
-    workflow: "#/workflows/trip_to_planet_workflow",
+    workflow: `#/workflows/${TripToPlanetWorkflow.definition.callback_id}`,
     inputs: {
         interactivity: {
             value: TriggerContextData.Shortcut.interactivity,
@@ -18,9 +18,9 @@ const bookTripTrigger: Trigger<typeof TripToPlanetWorkflow.definition> = {
         user: {
             value: TriggerContextData.Shortcut.user_id,
         },
-        channel: {
-            value: Deno.env.get("CHANNEL_ID")!,
-        },
+        // channel: {
+        //     value: Deno.env.get("CHANNEL_ID")!,
+        // },
     },
 };
 

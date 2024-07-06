@@ -6,7 +6,8 @@ import {AnnotationLinesOption, ChartConfigOptions, Datasets, DataValue,} from ".
 import {SlackAPIClient} from "deno-slack-api/types.ts";
 import {createGanttChart} from "./utils/chart.ts";
 import {getDateString} from "../utils.ts";
-import {PLANETS, TIME_AXIS_END_HOUR, TIME_AXIS_START_HOUR,} from "../constants/chart.ts";
+import {TIME_AXIS_END_HOUR, TIME_AXIS_START_HOUR,} from "../constants/chart.ts";
+import {PLANETS} from "../constants/planet.ts";
 
 export const GenerateGanttChartFunction = DefineFunction({
     callback_id: "generate_gantt_chart_function",
