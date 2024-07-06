@@ -6,14 +6,25 @@ import {AnnotationLinesOption, ChartConfigOptions, Datasets, DataValue,} from ".
 import {SlackAPIClient} from "deno-slack-api/types.ts";
 import {createGanttChart} from "./utils/chart.ts";
 import {getDateString} from "../utils.ts";
-import {LABELS, PLANETS, TIME_AXIS_END_HOUR, TIME_AXIS_START_HOUR,} from "../constants/chart.ts";
+import {PLANETS, TIME_AXIS_END_HOUR, TIME_AXIS_START_HOUR,} from "../constants/chart.ts";
 
 export const GenerateGanttChartFunction = DefineFunction({
     callback_id: "generate_gantt_chart_function",
     title: "Generate Gantt Chart",
     source_file: "functions/generate_gantt_chart.ts",
+    input_parameters: {
+        properties: {
+            interactivity: {
+                type: Schema.slack.types.interactivity,
+            },
+        },
+        required: [],
+    },
     output_parameters: {
         properties: {
+            interactivity: {
+                type: Schema.slack.types.interactivity,
+            },
             url: {
                 type: Schema.types.string,
             },
@@ -79,6 +90,7 @@ export async function generateTripsGanttChartUrl(
     landingTime?: number,
     takeoffTime?: number,
 ): Promise<string> {
+    console.log("Generating Gantt Chart");
     let trips = await getTrips(client);
     if (!trips) {
         const today = getDateString();
@@ -91,6 +103,7 @@ export async function generateTripsGanttChartUrl(
     );
     const url = await createGanttChart(options);
     //TODO: store url and re-use it as template
+    console.log("Gantt Chart URL: ", url);
     return url;
 }
 
@@ -106,7 +119,7 @@ function ganttChartConfigOptions(
     landingTime: number | undefined,
     takeoffTime: number | undefined,
 ): ChartConfigOptions {
-    const labels = LABELS;
+    const labels = PLANETS;
     const datasets = prepareDatasets(trips);
     const axisStartDate = new Date(trips.on);
     axisStartDate.setUTCHours(TIME_AXIS_START_HOUR);
@@ -114,7 +127,7 @@ function ganttChartConfigOptions(
     axisEndDate.setUTCHours(TIME_AXIS_END_HOUR);
     const annotationsOptions: AnnotationLinesOption = {
         start: {
-            value: new Date().getTime(),
+            value: new Date().getTime(), //TODO: use current time in IST
             color: "green",
         },
     };

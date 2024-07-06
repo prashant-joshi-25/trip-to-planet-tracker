@@ -6,6 +6,5 @@ const CHART_CREATE_ENDPOINT = "/create";
 export const CHART_CREATE_URL = `${CHART_API_BASE_URL}${CHART_CREATE_ENDPOINT}`;
 
 export const PLANETS = Object.values(Planet).sort((a, b) => a > b ? 1 : -1);
-export const LABELS = PLANETS.map((planet) => planet.split(" :")[0]);
 export const TIME_AXIS_START_HOUR = 8;
 export const TIME_AXIS_END_HOUR = 20;

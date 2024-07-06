@@ -1,6 +1,6 @@
 import {DefineFunction, Schema, SlackFunction} from "deno-slack-sdk/mod.ts";
 import {SlackAPIClient} from "deno-slack-api/types.ts";
-import {DailyTrips, Planet, TripTiming,} from "../types/trips.ts";
+import {DailyTrips, Planet, TripTiming} from "../types/trips.ts";
 import {getDateString, todayHHmmToTimestamp} from "../utils.ts";
 import {getTrips, storeTrips} from "../datastores/trips.ts";
 import {withHandledError} from "./error_handler.ts";
@@ -16,10 +16,10 @@ export const BookTripFunction = DefineFunction({
                 type: Schema.types.string,
             },
             landing_time: {
-                type: Schema.types.string, //TODO: use timepicker
+                type: Schema.types.string,
             },
             takeoff_time: {
-                type: Schema.types.string, //TODO: use timepicker
+                type: Schema.types.string,
             },
         },
         required: [
@@ -51,20 +51,31 @@ export const BookTripFunction = DefineFunction({
 export default SlackFunction(BookTripFunction, async ({ inputs, client }) => {
     return await withHandledError(async () => {
         const { planet, landing_time, takeoff_time } = inputs;
-        const landingAt = todayHHmmToTimestamp(landing_time);
-        const takeoffAt = todayHHmmToTimestamp(takeoff_time);
-        if (takeoffAt <= landingAt) {
-            throw new Error("takeoff time should be greater than landing time");
-        }
-        if (!isValidPlanet(planet)) {
-            throw new Error(`planet (${planet}) not supported`);
-        }
-        await processBooking(client, planet, landingAt, takeoffAt);
+        await bookTrip(client, planet, landing_time, takeoff_time);
         return {
             outputs: inputs,
         };
     });
 });
+
+export async function bookTrip(
+    client: SlackAPIClient,
+    planet: string,
+    landingTime: string,
+    takeoffTime: string,
+) {
+    console.log("Booking trip...", planet, landingTime, takeoffTime);
+    const landingAt = todayHHmmToTimestamp(landingTime);
+    const takeoffAt = todayHHmmToTimestamp(takeoffTime);
+    if (takeoffAt <= landingAt) {
+        throw new Error("takeoff time should be greater than landing time");
+    }
+    if (!isValidPlanet(planet)) {
+        throw new Error(`planet (${planet}) not supported`);
+    }
+    await processBooking(client, planet, landingAt, takeoffAt);
+    console.log("Trip booked successfully");
+}
 
 function getAvailableSlot(
     bookedTrips: TripTiming[],
