@@ -30,6 +30,7 @@ export default Manifest({
         "commands",
         "datastore:read",
         "datastore:write",
-        // "chat:write",
+        "chat:write",
+        "chat:write.public",
     ],
 });

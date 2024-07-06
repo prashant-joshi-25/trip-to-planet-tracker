@@ -1,4 +1,4 @@
-import {PLANETS} from "../constants/chart.ts";
+import {PLANETS} from "../constants/planet.ts";
 import {Planet} from "./trips.ts";
 
 export function isValidPlanet(planet: string): planet is Planet {
